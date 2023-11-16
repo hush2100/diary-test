@@ -1,38 +1,52 @@
-.App {
+div, input, textarea, select, p{
+  margin: 0;padding: 0;box-sizing: border-box;
+}
+.DiaryEditor{
+  border: 1px solid #ccc;
   text-align: center;
+  padding: 20px;
 }
-
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+.DiaryEditor input, .DiaryEditor textarea{
+  margin-bottom: 20px;
+  width: 500px;
+  padding: 10px;
 }
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+.DiaryEditor textarea{
+  height: 150px;
 }
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+.DiaryEditor select{
+  width: 300px;
+  padding: 10px;
+  margin-bottom: 20px;
 }
-
-.App-link {
-  color: #61dafb;
+.DiaryEditor button{
+  width: 500px;
+  padding: 10px;
+  cursor: pointer;
 }
+/* List */
+.DiaryList{
+  border: 1px solid #ccc;
+  padding: 20px;
+  margin-top: 20px;
+}
+.DiaryList h2{text-align: center;}
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+/* Item */
+.DiaryItem{
+  background-color: #f4f4f4;
+  margin-bottom: 20px;
+  padding: 20px;
+}
+.DiaryItem .info{
+  padding-bottom: 10px;
+}
+.DiaryItem .date{
+  color: #666;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #ddd;
+}
+.DiaryItem .content{
+  padding-top: 10px;
+  font-weight: 600;
 }
