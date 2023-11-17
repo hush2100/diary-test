@@ -1,11 +1,39 @@
-import { useState, useRef, useEffect, useMemo } from 'react';
+import React, { useRef, useEffect, useMemo, useCallback, useReducer, createContext } from 'react';
 import './App.css';
 import DiaryEditor from './DiaryEditor';
 import DiaryList from './DiaryList';
-// import Lifecycle from './Lifecycle';
+
+export const DiaryStateContext = createContext();
+export const DiaryDispatchContext = createContext();
+
+const reducer = (state, action) => {
+  switch(action.type) {
+    case "INIT": {
+      return action.data;
+    }
+    case "CREATE": {
+      const created_date = new Date().getTime();
+      const newItem = {
+        ...action.data, created_date
+      }
+      return [newItem, ...state];
+    }
+    case "REMOVE": {
+      return state.filter((it) => it.id !== action.targetId);
+    }
+    case "EDIT": {
+      return state.map((it) => it.id === action.targetId ? {...it, content:action.newContent} : it)
+    }
+    default: 
+      return state;
+    
+  }
+};
 
 function App() {
-  const [data, setData] = useState([]);
+  // const [data, setData] = useState([]);
+  const [data, dispatch] = useReducer(reducer, []);
+
   const dataId = useRef(0);
 
   const getData = async () => {
@@ -22,43 +50,48 @@ function App() {
         id : dataId.current++,
       }
     });
-
-    setData(initData);
+    dispatch({type: "INIT", data:initData});
+    //setData(initData);
   }
 
   useEffect(() => {
     getData();
   }, []);
   
-  const onCreate = (author, content, emotion) => {
-    const created_date = new Date().getTime();
-    const newItem = {
-      author, 
-      content, 
-      emotion,
-      created_date,
-      id: dataId.current
-    }
+  const onCreate = useCallback((author, content, emotion) => {
+    // const created_date = new Date().getTime();
+    // const newItem = {
+    //   author, 
+    //   content, 
+    //   emotion,
+    //   created_date,
+    //   id: dataId.current
+    // }
+    
+    dispatch({type: "CREATE", data: { author, content, emotion, id: dataId.current} })
     dataId.current += 1;
-    setData([newItem, ...data]);
-  };
-  const onRemove = (targetId) => {
-    console.log(`${targetId} 가 삭제되었습니다`);
-    const newDiaryList = data.filter(item => item.id !== targetId);
-    //console.log(newDiaryList);
-    setData(newDiaryList);
-  }
-  const onEdit = (targetId, newContent) => {
-    setData(
-      data.map((item) => item.id === targetId ? {...item, content: newContent} : item)
-    );
-  };
+    // setData((data) => [newItem, ...data]);
+  },[]);
+  const onRemove = useCallback((targetId) => {
+    dispatch({type: "REMOVE", targetId})
+    //setData((data) => data.filter(item => item.id !== targetId));
+  }, []);
+  const onEdit = useCallback((targetId, newContent) => {
+    dispatch({type: "EDIT", targetId, newContent})
+    // setData((data) =>
+    // data.map((item) => 
+    //   item.id === targetId ? {...item, content: newContent} : item)
+    // );
+  }, []);
+  const memoizedDispatch = useMemo(() => {
+    return {onCreate, onRemove, onEdit};
+  }, []);
 
   const getDiaryAnalysis = useMemo(() => {
     if (data.length === 0) {
       return { goodcount: 0, badCount: 0, goodRatio: 0 };
     }
-    console.log("일기 분석 시작");
+    //console.log("일기 분석 시작");
 
     const goodCount = data.filter((it) => it.emotion >= 3).length;
     const badCount = data.length - goodCount;
@@ -68,15 +101,18 @@ function App() {
   }, [data.length]);
   const { goodCount, badCount, goodRatio } = getDiaryAnalysis;
   return (
+  <DiaryStateContext.Provider value={data}>
+    <DiaryDispatchContext.Provider value={memoizedDispatch}>
     <div className="App">
-      {/* <Lifecycle /> */}
       <DiaryEditor onCreate={onCreate} />
       <div>전체 일기 : {data.length}</div>
       <div>기분 좋은 일기 개수 : {goodCount}</div>
       <div>기분 나쁜 일기 개수 : {badCount}</div>
       <div>기분 좋은 일기 비율 : {goodRatio}</div>
-      <DiaryList onEdit={onEdit} diaryList={data} onRemove={onRemove} />
+      <DiaryList />
     </div>
+    </DiaryDispatchContext.Provider>
+  </DiaryStateContext.Provider>
   );
 }
 
